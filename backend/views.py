@@ -144,3 +144,78 @@ class Logout(APIView):
             response_dict["dev_message"] = 'Logout Failed ' + str(KeyError)
         response = json.dumps(response_dict)
         return Response(response)
+
+class ToursDetail(generics.GenericAPIView):
+    serializer_class = ToursSerializer
+    def get(self,request,tour_id):
+        try: 
+            tour_obj = Tours.objects.get(id=tour_id)
+        except Exception as e:
+            return Response(Utilities.get_response(False,"tour id does not exist","tour id does not exist"))
+        serializer = self.get_serializer(tour_obj,many=False)
+        return Response(serializer.data)
+    
+    def put(self,request,tour_id):
+        return Response()
+
+class ToursList(generics.GenericAPIView):
+    serializer_class = ToursSerializer 
+
+    def post(self,request,format=None):
+        try:
+            request_post = json.loads(request.body)
+        except Exception as e:
+            return Response(Utilities.get_response(False,"Empty post","Empty post"))
+        if "name" not in request_post:
+            return Response(Utilities.get_response(False,"Name is missing","Name is missing"))
+        if "start_date" not in request_post:
+            return Response(Utilities.get_response(False,"start date is missing","start date is missing"))
+        if "end_date" not in request_post:
+            return Response(Utilities.get_response(False,"end date is missing","end date is missing"))
+        start = datetime.strptime(request_post['start_date'],"%m/%d/%Y")
+        end = datetime.strptime(request_post['end_date'],"%m/%d/%Y")
+        tour_obj = Tours(name=request_post['name'],start_date=start,end_date=end)
+        tour_obj.save()
+        return Response(Utilities.get_response(True,"Tour created","Tour created"))
+
+    def get(self,request,format=None):
+        tour_objects = Tours.objects.all()
+        serializer = self.get_serializer(tour_objects,many=True)
+        return Response(serializer.data)
+
+class PlacesList(generics.GenericAPIView):
+    serializer_class = PlacesSerializer
+    def get(self,request,format=None):
+        place_objects = Places.objects.all()
+        serializer = self.get_serializer(place_objects,many=True)
+        return Response(serializer.data)
+    
+    def post(self,request,format=None):
+        try:
+            request_post = json.loads(request.body)
+        except Exception as e:
+            return Response(Utilities.get_response(False,"Empty post","Empty post"))
+        if "name" not in request_post:
+            return Response(Utilities.get_response(False,"Name is missing","Name is missing"))
+        if "address" not in request_post:
+            return Response(Utilities.get_response(False,"address is missing","address is missing"))
+        if "description" not in request_post:
+            return Response(Utilities.get_response(False,"description is missing","description is missing"))
+        place_obj = Places(name=request_post['name'],address=request_post['address'],description=request_post['description'])
+        place_obj.save()
+        return Response(Utilities.get_response(True,"Place created","Place created"))
+
+class PlacesDetail(generics.GenericAPIView):
+    serializer_class = PlacesSerializer
+    def get(self,request,place_id):
+        try: 
+            place_obj = Places.objects.get(id=place_id)
+        except Exception as e:
+            return Response(Utilities.get_response(False,"place id does not exist","place id does not exist"))
+        serializer = self.get_serializer(place_obj,many=False)
+        return Response(serializer.data)
+    
+    def put(self,request,place_id):
+        return Response()
+    
+    

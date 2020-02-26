@@ -30,6 +30,7 @@ class Places(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=50,null=False)
     address = models.CharField(max_length=200,null=True)
+    description = models.CharField(max_length=1000,null=True)
     creation_date = models.DateTimeField(default= django.utils.timezone.now )
     last_modified = models.DateTimeField( auto_now = True )
 
