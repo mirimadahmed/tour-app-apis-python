@@ -13,5 +13,7 @@ urlpatterns = [
     path('tours/<tour_id>/',views.ToursDetail.as_view()),
     path('places/',views.PlacesList.as_view()),
     path('places/<place_id>/',views.PlacesDetail.as_view()),
-
+    path('upcoming_tours/',views.UpcomingTours.as_view()),
+    path('friends/<user_id>/',views.AddFriends.as_view()),
+    
 ]

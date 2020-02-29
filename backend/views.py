@@ -31,7 +31,7 @@ from .models import *
 from django.contrib.auth.models import User
 from .serializers import *
 from django.conf import settings
-
+from django.utils import timezone
 
 class UserSignup(APIView):
 
@@ -218,4 +218,55 @@ class PlacesDetail(generics.GenericAPIView):
     def put(self,request,place_id):
         return Response()
     
+
+class UpcomingTours(generics.GenericAPIView):
+    serializer_class = ToursSerializer
+    def get(self,request,format=None):
+        tours_obj = Tours.objects.filter()
+        tours_obj = tours_obj.exclude(start_date__lt=timezone.now())
+        serializer = self.get_serializer(tours_obj,many=True)
+        return Response(serializer.data)
+
+
+class AddFriends(generics.GenericAPIView):
+    serializer_class = UsersSerializer
+    def post(self,request,user_id):
+        try:
+            request_post = json.loads(request.body)
+        except Exception as e:
+            return Response(Utilities.get_response(False,"Empty post","Empty post"))
+        try: 
+            user_obj = Users.objects.get(id=user_id)
+        except Exception as e: 
+            return Response(Utilities.get_response(False, "Invalid Id","Invalid Id"))
+        if "friend_id" not in request_post:
+            return Response(Utilities.get_response(False,"Friend does not exist","Friend does not exist"))
+        if request_post['friend_id'] == user_id:
+            return Response(Utilities.get_response(False,"Can't friend yourself","Can't friend yourself"))
+        try: 
+            friend_obj = Users.objects.get(id=request_post['friend_id'])
+        except Exception as e: 
+            return Response(Utilities.get_response(False, "Invalid friend id","Invalid friend id"))
+        if len(Friends.objects.filter(user_1=user_obj,user_2=friend_obj)) == 1:
+            return Response(Utilities.get_response(False,"Already friends","Already friends"))
+        if len(Friends.objects.filter(user_2=user_obj,user_1=friend_obj)) == 1:
+              return Response(Utilities.get_response(False,"Already friends","Already friends"))
+        friend_obj = Friends(user_1 = user_obj, user_2 = friend_obj)
+        friend_obj.save()
+        return Response(Utilities.get_response(True,"Friend Added","Friend Added"))
     
+    def get(self,request,user_id):
+        try:
+            user_obj = Users.objects.get(id=user_id) 
+        except: 
+            return Response(Utilities.get_response(False,"user does not exist","user does not exist"))
+        qs1 = Friends.objects.filter(user_1=user_obj).values_list('user_2',flat=True)
+        qs2 = Friends.objects.filter(user_2=user_obj).values_list('user_1',flat=True)
+        new = qs1.union(qs2)
+        users_list = []
+        for each in new:
+            users_list.append(each)
+        user_obj = Users.objects.filter(id__in=users_list)
+        print(user_obj)
+        serializer = self.get_serializer(user_obj,many=True)
+        return Response(serializer.data)

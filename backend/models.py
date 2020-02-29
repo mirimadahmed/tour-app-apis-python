@@ -20,8 +20,8 @@ class Users(models.Model):
 
 class Friends(models.Model):
     id = models.AutoField(primary_key=True)
-    user_1 = models.ForeignKey('Users',on_delete=models.PROTECT,null=True)
-    user_1 = models.ForeignKey('Users',on_delete=models.PROTECT,null=True)
+    user_1 = models.ForeignKey('Users',on_delete=models.PROTECT,null=True,related_name='user_1')
+    user_2 = models.ForeignKey('Users',on_delete=models.PROTECT,null=True,related_name='user_2')
 
     creation_date = models.DateTimeField(default= django.utils.timezone.now )
     last_modified = models.DateTimeField( auto_now = True )
