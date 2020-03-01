@@ -44,8 +44,28 @@ class Activities(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=50,null=False)
     tour_id = models.ForeignKey('Tours',on_delete=models.PROTECT,null=True)
+    description = models.CharField(max_length=1000,null=True)
 
-class Memories():
+class Memories(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=50,null=False)
     tour_id = models.ForeignKey('Tours',on_delete=models.PROTECT,null=True)
+
+class Adventures(models.Model): 
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=50,null=False)
+    _from = models.CharField(max_length=100,null=False)
+    destination = models.CharField(max_length=100,null=False)
+    start_date = models.DateField()
+    end_date = models.DateField()
+    per_day = models.BooleanField(default=False)
+    description = models.CharField(max_length=2000)
+    budget = models.FloatField()
+    user_id = models.ForeignKey('Users',on_delete=models.PROTECT,null=True)
+
+
+class VisitedTours(models.Model):
+    id = models.AutoField(primary_key=True)
+    tour_id = models.ForeignKey('Tours',on_delete=models.PROTECT,null=True)
+    user_id = models.ForeignKey('Users',on_delete=models.PROTECT,null=True)
+    

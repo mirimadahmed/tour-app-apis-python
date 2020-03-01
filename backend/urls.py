@@ -15,5 +15,6 @@ urlpatterns = [
     path('places/<place_id>/',views.PlacesDetail.as_view()),
     path('upcoming_tours/',views.UpcomingTours.as_view()),
     path('friends/<user_id>/',views.AddFriends.as_view()),
-    
+    path('adventures/<user_id>/',views.AdventuresList.as_view()),
+    path('visited_tours/<user_id>/',views.AddTours.as_view()),
 ]

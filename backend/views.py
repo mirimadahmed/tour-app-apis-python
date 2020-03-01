@@ -270,3 +270,108 @@ class AddFriends(generics.GenericAPIView):
         print(user_obj)
         serializer = self.get_serializer(user_obj,many=True)
         return Response(serializer.data)
+
+class AddActivities(generics.GenericAPIView):
+    serializer_class = ActivitiesSerializer
+    def post(self,request,tour_id):
+        try: 
+            request_post = json.loads(request.body)
+        except Exception as e:
+            return Response(Utilities.get_response(False,"empty post","empty post"))
+        try: 
+            tour_obj = Tours.objects.get(id=tour_id)
+        except: 
+            return Response(Utilities.get_response(False,"tour does not exist","tour does not exist"))
+        if "name" not in request_post:
+            return Response(Utilities.get_response(False,"name does not exist","name does not exist"))
+        if "description" not in request_post:
+            return Response(Utilities.get_response(False,"description does not exist","description does not exist"))
+        activity_obj = Activities(name=request_post['name'],description=request_post['description'])
+        activity_obj.save()
+        return Response(Utilities.get_response(True,"Activity added","Activity added"))
+
+    def get(self,request,tour_id):
+        try: 
+            tour_obj = Tours.objects.get(id=tour_id)
+        except: 
+            return Response(Utilities.get_response(False,"tour does not exist","tour does not exist"))
+        activities_obj = Activities.objects.filter(tour_id=tour_obj)
+        serializer = self.get_serializer(activities_obj,many=True)
+        return Response(serializer.data)
+
+class AdventuresList(generics.GenericAPIView):
+    serializer_class = AdventuresSerializer
+    def post(self,request,user_id):
+        try: 
+            user_obj = Users.objects.get(id=user_id)
+        except:
+            return Response(Utilities.get_response(False,"user does not exist","user does not exist")) 
+        try: 
+            request_post = json.loads(request.body)
+        except: 
+            return Response(Utilities.get_response(False,"empty post","empty post"))
+        if 'name' not in request_post:
+            return Response(Utilities.get_response(False,"name field not found","name field not found"))
+        if 'description' not in request_post:
+            return Response(Utilities.get_response(False,"description field not found","description field not found"))
+        if 'per_day' not in request_post:
+            return Response(Utilities.get_response(False,"per_day field not found","per_day field not found"))
+        if '_from' not in request_post:
+            return Response(Utilities.get_response(False,"_from field not found","_from field not found"))
+        if 'destination' not in request_post:
+            return Response(Utilities.get_response(False,"destination field not found","destination field not found"))
+        if 'start_date' not in request_post:
+            return Response(Utilities.get_response(False,"start_date field not found","start_date field not found"))
+        if 'end_date' not in request_post:
+            return Response(Utilities.get_response(False,"end_date field not found","end_date field not found"))
+        if 'budget' not in request_post:
+            return Response(Utilities.get_response(False,"budget field not found","budget field not found"))
+        try:
+            start = datetime.strptime(request_post['start_date'],"%m/%d/%Y")
+            end = datetime.strptime(request_post['end_date'],"%m/%d/%Y")
+        except: 
+            return Response(Utilities.get_response(False,"date format is invalid","date format is invalid"))
+        adventure_obj = Adventures(user_id=user_obj,budget=request_post['budget'],description=request_post['description'],name=request_post['name'],per_day=request_post['per_day'],_from=request_post['_from'],destination=request_post['destination'],start_date=start,end_date=end)        
+        adventure_obj.save()
+        return Response(Utilities.get_response(True,"Adventure added","Adventure added"))
+
+    def get(self,request,user_id):
+        try: 
+            user_obj = Users.objects.get(id=user_id)
+        except:
+            return Response(Utilities.get_response(False,"user does not exist","user does not exist")) 
+        adventure_objects = Adventures.objects.filter(user_id=user_obj)
+        serializer = self.get_serializer(adventure_objects,many=True)
+        return Response(serializer.data)
+
+
+class AddTours(generics.GenericAPIView):
+    serializer_class = ToursSerializer
+    def post(self,request,user_id):
+        try: 
+            user_obj = Users.objects.get(id=user_id)
+        except: 
+            return Response(Utilities.get_response(False,"user does not exist","user does not exist"))
+        try:
+            request_post = json.loads(request.body)
+        except:
+            return Response(Utilities.get_response(False,"empty post","empty post"))
+        if "tour_id" not in request_post:
+            return Response(Utilities.get_response(False,"tour id is missing"))
+        try: 
+            tour_obj = Tours.objects.get(id=request_post['tour_id'])
+        except: 
+            return Response(Utilities.get_response(False,"tour does not exist","tour does not exist"))
+        visited_obj = VisitedTours(user_id=user_obj,tour_id=tour_obj)
+        visited_obj.save()
+        return Response(Utilities.get_response(True,"tour added to visited","tour added to visited"))
+
+    def get(self,request,user_id):
+        try: 
+            user_obj = Users.objects.get(id=user_id)
+        except: 
+            return Response(Utilities.get_response(False,"user does not exist","user does not exist"))
+        visited_objects = VisitedTours.objects.filter(user_id=user_obj).values_list('tour_id',flat=True)
+        tour_objects = Tours.objects.filter(id__in=visited_objects)
+        serializer = self.get_serializer(tour_objects,many=True)
+        return Response(serializer.data)
