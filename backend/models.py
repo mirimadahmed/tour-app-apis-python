@@ -18,10 +18,10 @@ class Users(models.Model):
     creation_date = models.DateTimeField(default= django.utils.timezone.now )
     last_modified = models.DateTimeField( auto_now = True )
 
-class Friends(models.Model):
+class Followers(models.Model):
     id = models.AutoField(primary_key=True)
-    user_1 = models.ForeignKey('Users',on_delete=models.PROTECT,null=True,related_name='user_1')
-    user_2 = models.ForeignKey('Users',on_delete=models.PROTECT,null=True,related_name='user_2')
+    follower = models.ForeignKey('Users',on_delete=models.PROTECT,null=True,related_name='user_1')
+    followed = models.ForeignKey('Users',on_delete=models.PROTECT,null=True,related_name='user_2')
 
     creation_date = models.DateTimeField(default= django.utils.timezone.now )
     last_modified = models.DateTimeField( auto_now = True )

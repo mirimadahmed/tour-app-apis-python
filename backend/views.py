@@ -228,7 +228,7 @@ class UpcomingTours(generics.GenericAPIView):
         return Response(serializer.data)
 
 
-class AddFriends(generics.GenericAPIView):
+class AddFollowers(generics.GenericAPIView):
     serializer_class = UsersSerializer
     def post(self,request,user_id):
         try:
@@ -239,35 +239,27 @@ class AddFriends(generics.GenericAPIView):
             user_obj = Users.objects.get(id=user_id)
         except Exception as e: 
             return Response(Utilities.get_response(False, "Invalid Id","Invalid Id"))
-        if "friend_id" not in request_post:
-            return Response(Utilities.get_response(False,"Friend does not exist","Friend does not exist"))
-        if request_post['friend_id'] == user_id:
-            return Response(Utilities.get_response(False,"Can't friend yourself","Can't friend yourself"))
+        if "follower_id" not in request_post:
+            return Response(Utilities.get_response(False,"Follower id does not exist","Follower does not exist"))
+        if request_post['followed_id'] == user_id:
+            return Response(Utilities.get_response(False,"Can't follow yourself","Can't follow yourself"))
         try: 
-            friend_obj = Users.objects.get(id=request_post['friend_id'])
+            followed_obj = Users.objects.get(id=request_post['followed_id'])
         except Exception as e: 
-            return Response(Utilities.get_response(False, "Invalid friend id","Invalid friend id"))
-        if len(Friends.objects.filter(user_1=user_obj,user_2=friend_obj)) == 1:
-            return Response(Utilities.get_response(False,"Already friends","Already friends"))
-        if len(Friends.objects.filter(user_2=user_obj,user_1=friend_obj)) == 1:
-              return Response(Utilities.get_response(False,"Already friends","Already friends"))
-        friend_obj = Friends(user_1 = user_obj, user_2 = friend_obj)
-        friend_obj.save()
-        return Response(Utilities.get_response(True,"Friend Added","Friend Added"))
-    
+            return Response(Utilities.get_response(False, "Invalid follower id","Invalid follower id"))
+        if len(Followers.objects.filter(follower=user_obj,followed=followed_obj)) == 1:
+            return Response(Utilities.get_response(False,"already a follower","already a follower"))
+        follower_obj = Followers(follower = user_obj, followed = followed_obj)
+        follower_obj.save()
+        return Response(Utilities.get_response(True,"Follower added","Follower added"))
+
     def get(self,request,user_id):
         try:
             user_obj = Users.objects.get(id=user_id) 
         except: 
             return Response(Utilities.get_response(False,"user does not exist","user does not exist"))
-        qs1 = Friends.objects.filter(user_1=user_obj).values_list('user_2',flat=True)
-        qs2 = Friends.objects.filter(user_2=user_obj).values_list('user_1',flat=True)
-        new = qs1.union(qs2)
-        users_list = []
-        for each in new:
-            users_list.append(each)
-        user_obj = Users.objects.filter(id__in=users_list)
-        print(user_obj)
+        followers = Followers.objects.filter(follower=user_obj).values_list('followed',flat=True)
+        user_obj = Users.objects.filter(id__in=followers)
         serializer = self.get_serializer(user_obj,many=True)
         return Response(serializer.data)
 
@@ -343,7 +335,6 @@ class AdventuresList(generics.GenericAPIView):
         adventure_objects = Adventures.objects.filter(user_id=user_obj)
         serializer = self.get_serializer(adventure_objects,many=True)
         return Response(serializer.data)
-
 
 class AddTours(generics.GenericAPIView):
     serializer_class = ToursSerializer
